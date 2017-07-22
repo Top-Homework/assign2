@@ -34,15 +34,13 @@
 #define INVALID_SOCKET -1 // anything that is -1 is invalid for linux
 #define SOCKET_ERROR -1   // most functions that fail return -1 for linux
 
-class Server
-{
+class {
   public:
     // no copies please, only references
     Server(Server const &) = delete;
     void operator=(Server const &) = delete;
 
-    Server()
-    {
+    Server() {
         // right now, this only needs to happen once
         memset(&address_hints, 0, sizeof(address_hints));
         address_hints.ai_family = AF_INET;
@@ -50,20 +48,16 @@ class Server
         address_hints.ai_protocol = IPPROTO_TCP;
         address_hints.ai_flags = AI_PASSIVE;
     }
-    ~Server()
-    {
+    ~Server() {
         free_array();
         free_socket(socket_listen);
         free_socket(socket_client);
     }
 
     SOCKET &
-    connect_client(int port_number)
-    {
-        if (listen_to(port_number))
-        {
-            if (!connect_to())
-            {
+    connect_client(int port_number) {
+        if (listen_to(port_number)) {
+            if (!connect_to()) {
                 socket_client = INVALID_SOCKET;
             }
         }
@@ -71,14 +65,12 @@ class Server
     }
     bool
         // SHUT_RD, SHUT_WR, SHUT_RDWR
-        release_client(int how = SHUT_RDWR)
-    {
+        release_client(int how = SHUT_RDWR) {
         int result = 0;
 
         // shutdown the send half of the connection since no more data will be sent
         result = ::shutdown(socket_client, how);
-        if (result == SOCKET_ERROR)
-        {
+        if (result == SOCKET_ERROR) {
             cout << "send shutdown failed: " << errno << endl;
             return false;
         }
@@ -104,10 +96,8 @@ class Server
     // current port number
     int port = 0;
 
-    bool listen_to(int port_number)
-    {
-        if (listening && port == port_number)
-        {
+    bool listen_to(int port_number) {
+        if (listening && port == port_number) {
             return true;
         }
         port = port_number;
@@ -128,8 +118,7 @@ class Server
         // getaddrinfo
         free_array();
         result = ::getaddrinfo(0, to<string>(port).c_str(), &address_hints, &address_array);
-        if (result != 0)
-        {
+        if (result != 0) {
             cout << "getaddrinfo failed: " << result << endl;
             return false;
         }
@@ -140,8 +129,7 @@ class Server
         //cout << "socket" << endl;
         socket_listen = ::socket(addr->ai_family, addr->ai_socktype, addr->ai_protocol);
         //cout << "socket end" << endl;
-        if (socket_listen == INVALID_SOCKET)
-        {
+        if (socket_listen == INVALID_SOCKET) {
             cout << "socket failed: " << errno << endl;
             return false;
         }
@@ -150,8 +138,7 @@ class Server
         //cout << "bind" << endl;
         result = ::bind(socket_listen, addr->ai_addr, (int)addr->ai_addrlen);
         //cout << "bind end" << endl;
-        if (result == SOCKET_ERROR)
-        {
+        if (result == SOCKET_ERROR) {
             cout << "bind failed: " << errno << endl;
             return false;
         }
@@ -166,8 +153,7 @@ class Server
         //cout << "listen" << endl;
         result = ::listen(socket_listen, SOMAXCONN);
         //cout << "listen end" << endl;
-        if (result == SOCKET_ERROR)
-        {
+        if (result == SOCKET_ERROR) {
             cout << "listen failed: " << errno << endl;
             return false;
         }
@@ -175,8 +161,7 @@ class Server
         listening = true;
         return true;
     }
-    bool connect_to()
-    {
+    bool connect_to() {
         connected = false;
 
         // accept
@@ -184,8 +169,7 @@ class Server
         //cout << "accept" << endl;
         socket_client = ::accept(socket_listen, 0, 0);
         //cout << "accept end" << endl;
-        if (socket_client == INVALID_SOCKET)
-        {
+        if (socket_client == INVALID_SOCKET) {
             cout << "accept failed: " << errno << endl;
             return false;
         }
@@ -194,20 +178,15 @@ class Server
         return true;
     }
 
-    void free_array()
-    {
-        if (address_array)
-        {
+    void free_array() {
+        if (address_array) {
             ::freeaddrinfo(address_array);
         }
         address_array = 0;
     }
-    void free_socket(SOCKET &s)
-    {
-        if (s != INVALID_SOCKET)
-        {
-            if (::close(s) == SOCKET_ERROR)
-            {
+    void free_socket(SOCKET &s) {
+        if (s != INVALID_SOCKET) {
+            if (::close(s) == SOCKET_ERROR) {
                 cout << "closesocket failed: " << errno << endl;
             }
             s = INVALID_SOCKET;
