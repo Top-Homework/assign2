@@ -7,8 +7,7 @@
 // for any std container that implements const_iterator
 // doesn't work with: map,
 template <typename CONTAINER, typename STREAM>
-void print(CONTAINER const &c, STREAM &o)
-{
+void print(CONTAINER const &c, STREAM &o) {
     for (typename CONTAINER::const_iterator it = c.begin();
          it != c.end();
          ++it)
@@ -25,8 +24,7 @@ void print(CONTAINER const &c, STREAM &o)
 
 // for anything stringstream can handle
 template <typename TO, typename FROM>
-TO to(FROM const &a)
-{
+TO to(FROM const &a) {
     TO b;
     stringstream ss;
     ss << a;
