@@ -34,7 +34,7 @@
 #define INVALID_SOCKET -1 // anything that is -1 is invalid for linux
 #define SOCKET_ERROR -1   // most functions that fail return -1 for linux
 
-class {
+class Server {
   public:
     // no copies please, only references
     Server(Server const &) = delete;
