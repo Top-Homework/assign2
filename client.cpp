@@ -89,7 +89,7 @@ int main(int argc, char **argv) {
             int result = 0;
 
             // send ID
-            string send_message = prompt("Enter a user name: ");
+            string send_message = prompt("Enter a neighborhood name: ");
             result = send(
                 server_socket,
                 send_message.c_str(),
