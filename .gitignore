@@ -33,3 +33,5 @@
 
 # My Own
 .vscode/
+client
+server

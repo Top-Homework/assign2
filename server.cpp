@@ -91,6 +91,7 @@ int main(int argc, char **argv) {
         if (ss.bad()) {
             continue;
         }
+        id.pop_back();
         public_keys.insert(pair<string, string>(id, key));
     }
     in.close();
