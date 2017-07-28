@@ -1,5 +1,6 @@
 // client
 // linux version
+// Used http://www.cs.rpi.edu/~moorthy/Courses/os98/Pgms/socket.html
 
 // socket headers
 #include <sys/socket.h>
@@ -49,87 +50,86 @@ string prompt(string const &text) {
     return input;
 }
 
-#define LEN 1024 // recv buffer length
+void error(const char * msg) {
+    perror(msg);
+    exit(1);
+}
+
+#define LEN 256 // recv buffer length
+
+void dostuff(int sock) {
+    while (true) {
+        string send_message = prompt("Enter a Houston neighborhood: ");
+        int n;
+        string recv_message;
+        n = send(sock, send_message.c_str(), send_message.size() + 1, 0);
+        if (n < 0)
+            error("ERROR writing to socket");
+        if (send_message.size() == 0)
+            break;
+        cout << "waiting: " << endl;
+        while (true) {
+            cout << "while: " << endl;
+            char buffer[LEN + 1];
+            bzero(buffer, LEN);
+            n = recv(sock, buffer, LEN, 0);
+            if (n < 0)
+                error("ERROR reading from socket");
+            recv_message += buffer;
+            if (buffer[n - 1] == 0) {
+                break;
+            }
+        }
+        cout << "recvd: " << recv_message << endl;
+        if (recv_message.size() == 0) {
+            cout << "That neighborhood is not in the table" << endl;
+        }
+        else
+            cout << "The average price of houses in " << send_message << " is $" << recv_message << endl;
+    }
+}
 
 int main(int argc, char **argv) {
     // Start client
-    //
-    //
-    {
-        Client client;
+    Client client;
 
-        char local_hostname[256] = {};
-        gethostname(local_hostname, 256);
+    char local_hostname[256] = {};
+    gethostname(local_hostname, 256);
 
-        string hostname = prompt("Enter a server host name: ");
-        while (hostname != local_hostname) {
-            cout << "Error. By requirement, the host name must equal '"
-                 << local_hostname
-                 << "'."
-                 << endl;
-            hostname = prompt("Enter a server host name: ");
-        }
-        string port = prompt("Enter server port number: ");
-        cout << endl;
-        int port_number = to<int>(port);
-
-        //cout << "connect_server" << endl;
-        SOCKET server_socket = client.connect_server(hostname, port_number);
-        if (server_socket == INVALID_SOCKET) {
-            cout << "Could not connect to the server."
-                 << "\n"
-                 << "Please check the port number."
-                 << endl;
-        }
-        //cout << "connect_server end" << endl;
-        if (server_socket != INVALID_SOCKET) {
-            cout << "Connected to the server."
-                 << endl;
-            // send/receive
-            int result = 0;
-
-            // send ID
-            string send_message = prompt("Enter a neighborhood name: ");
-            result = send(
-                server_socket,
-                send_message.c_str(),
-                send_message.size() + 1, // +1 to send NULL terminator
-                0);
-            if (result == SOCKET_ERROR) {
-                cout << "send failed: " << errno
-                     << endl;
-            }
-
-            if (!is_terminate_message(send_message)) {
-                // recv KEY
-                string recv_message;
-                while (true) {
-                    char buffer[LEN + 1] = {};
-                    int length = recv(server_socket, buffer, LEN, 0);
-                    if (length < 0) {
-                        cout << "recv failed: " << errno << "."
-                             << endl;
-                        break;
-                    }
-                    recv_message += buffer;
-                    // note: "length - 1" is last char in string
-                    if (buffer[length - 1] == 0) {
-                        break;
-                    }
-                }
-                if (recv_message.size() == 0) {
-                    cout << "NOT FOUND" << endl;
-                }
-                else {
-                    cout << recv_message << endl;
-                }
-            }
-
-            cout << endl;
-            client.release_server();
-
-        } // if ( server_socket != INVALID_SOCKET )
+    // string hostname = prompt("Enter a server host name: ");
+    string hostname = "Flagship";
+    while (hostname != local_hostname) {
+        cout << "Error. By requirement, the host name must equal '"
+             << local_hostname
+             << "'."
+             << endl;
+        hostname = prompt("Enter a server host name: ");
     }
+    // string port = prompt("Enter server port number: ");
+    string port = "1111";
+    cout << endl;
+    int port_number = to<int>(port);
 
+    //cout << "connect_server" << endl;
+    SOCKET server_socket = client.connect_server(hostname, port_number);
+    if (server_socket == INVALID_SOCKET) {
+        cout << "Could not connect to the server."
+             << "\n"
+             << "Please check the port number."
+             << endl;
+    }
+    //cout << "connect_server end" << endl;
+    if (server_socket != INVALID_SOCKET) {
+        cout << "Connected to the server."
+             << endl;
+        // send/receive
+        int result = 0;
+
+        dostuff(server_socket);
+
+        cout << endl;
+        client.release_server();
+
+    } // if ( server_socket != INVALID_SOCKET )
     return 0;
 }

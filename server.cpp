@@ -1,5 +1,6 @@
 // server
 // linux version
+// Used http://www.cs.rpi.edu/~moorthy/Courses/os98/Pgms/socket.html
 
 // socket headers
 #include <sys/socket.h>
@@ -8,6 +9,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <netdb.h>
+#include <stdlib.h>
 
 // other headers
 #include <cstdio>
@@ -18,6 +20,7 @@
 #include <sstream>
 #include <fstream>
 #include <map>
+#include <vector>
 
 using namespace std;
 
@@ -30,165 +33,171 @@ using namespace std;
 
 #define SOCKET int // linux uses int instead of a SOCKET struct
 
-bool find_free_port(int &port) {
+struct Listing
+{
+    string neighborhood;
+    string price;
+};
+
+bool find_free_port(int &port)
+{
     Client client;
     SOCKET server_socket = client.connect_server("localhost", port);
-    while (server_socket != INVALID_SOCKET) {
+    while (server_socket != INVALID_SOCKET)
+    {
         ++port;
         server_socket = client.connect_server("localhost", port);
     }
     return client.error_state() == false;
 }
 
-bool is_terminate_message(string const &message) {
-    if (message == "Terminate.") {
-        return true;
-    }
-    if (message == "Terminate") {
-        return true;
-    }
-    if (message == "terminate.") {
-        return true;
-    }
-    if (message == "terminate") {
-        return true;
-    }
-
-    return false;
-}
-
-string prompt(string const &text) {
+string prompt(string const &text)
+{
     string input;
     cout << text;
     getline(cin, input);
     return input;
 }
 
-#define LEN 1024 // recv buffer length
+void error(const char *msg)
+{
+    perror(msg);
+    exit(1);
+}
 
-int main(int argc, char **argv) {
-    // Get keys
-    string filename = prompt("Enter a file name: ");
-    ifstream in(filename);
-    if (!in) {
-        cout << "Cannot open input file. Program terminates!!!"
+#define LEN 256 // recv buffer length
+vector<vector<string>> table;
+
+int main(int argc, char **argv)
+{
+    // string filename = prompt("Enter a file name: ");
+    string filename = "2.txt";
+    Server server;
+    // string port = prompt("Enter server port number: ");
+    // int port_number = to<int>(port);
+    int port_number = 1111;
+    cout << port_number
+         << endl;
+    if (find_free_port(port_number) == false)
+    {
+        cout << "Could not connect to port number: " << port_number << "."
              << endl;
         return 1;
     }
-    map<string, string> public_keys;
-    string line;
-    while (getline(in, line)) {
-        if (line.empty() || line.at(0) == '\n') {
-            continue;
-        }
+    cout << "Listening to port number: " << port_number
+         << endl
+         << endl;
 
-        string id;
-        string key;
+    int result = 0;
 
-        stringstream ss(line);
-        ss >> id;
-        ss >> key;
-        if (ss.bad()) {
-            continue;
-        }
-        id.pop_back();
-        public_keys.insert(pair<string, string>(id, key));
+    ifstream in(filename);
+    if (!in)
+    {
+        cout << "Cannot open input file. Program terminates!!!"
+             << endl;
+        exit(1);
     }
+
+    // Getting number of lines in file
+    string data;
+    int count = 0;
+    while (getline(in, data))
+    {
+        // cout << "Are you running?" << endl;
+        count++;
+    }
+    // cout << "before clear" << endl;
+    in.clear();
+    // cout << "after clear" << endl;
+    in.seekg(0, ios::beg);
+    // cout << "after seek" << endl;
     in.close();
 
-    // print map
-    //for(map<string, string>::const_iterator it = public_keys.begin();
-    //    it != public_keys.end();
-    //    ++it)
-    //{
-    //    static int count = 0;
-    //    cout << count++ << ": " << it->first << " " << it->second << endl;
-    //}
-
-    // Start server
-    //
-    //
+    Listing listing[count];
+    string line;
+    cout << "top count: " << count << endl;
+    count = 0;
+    in.open(filename);
+    while (getline(in, line))
     {
-        Server server;
-
-        string port = prompt("Enter server port number: ");
-        int port_number = to<int>(port);
-        cout << port_number
-             << endl;
-        if (find_free_port(port_number) == false) {
-            cout << "Could not connect to port number: " << port_number << "."
-                 << endl;
-            return 1;
+        // cout << "line " << line << endl;
+        vector<string> line_data;
+        if (line.empty() || line.at(0) == '\n')
+        {
+            continue;
         }
-        cout << "Listening to port number: " << port_number
-             << endl
-             << endl;
+        string neighborhood;
+        string price;
+        int comma = line.find(",");
+        neighborhood = line.substr(0, comma);
+        // cout << "neighborhood " << neighborhood << endl;
+        price = line.substr(comma + 2, '\n');
+        // cout << "price " << price << endl;
+        listing[count].neighborhood = neighborhood;
+        listing[count].price = price;
+        // string face = listing[count].neighborhood + " " + listing[count].price;
+        count++;
+        // cout << " dd";
+    }
+    in.close();
+    while (true)
+    {
+        //cout << "connect_client" << endl;
+        SOCKET client_socket = server.connect_client(port_number);
+        //cout << "connect_client end" << endl;
+        if (client_socket == INVALID_SOCKET)
+        {
+            break;
+        }
 
-        while (true) {
-            //cout << "connect_client" << endl;
-            SOCKET client_socket = server.connect_client(port_number);
-            //cout << "connect_client end" << endl;
-            if (client_socket == INVALID_SOCKET)
-            {
-                break;
-            }
+        cout << "Accepted a client." << endl;
 
-            cout << "Accepted a client." << endl;
+        while (true)
+        {
             // send/receive
+            int n;
+            string recv_message;
+            cout << "waiting " << endl;
+            while (true)
             {
-                int result = 0;
-
-                // recv ID
-                string recv_message;
-                while (true) {
-                    char buffer[LEN + 1] = {};
-                    int length = recv(client_socket, buffer, LEN, 0);
-                    if (length < 0) {
-                        cout << "recv failed: " << errno << "."
-                             << endl;
-                        break;
-                    }
-                    recv_message += buffer;
-                    // note: "length - 1" is last char in string
-                    if (buffer[length - 1] == 0) {
-                        break;
-                    }
-                }
-                if (recv_message.size() == 0) {
-                    cout << "NO MESSAGE" << endl;
-                }
-                else {
-                    cout << "request: '" << recv_message << "'" << endl;
-                }
-
-                if (!is_terminate_message(recv_message)) {
-                    // send KEY
-                    string send_message;
-                    map<string, string>::iterator it = public_keys.find(recv_message);
-                    if (it != public_keys.end()) {
-                        send_message = it->second;
-                    }
-
-                    result = send(
-                        client_socket,
-                        send_message.c_str(),
-                        send_message.size() + 1, // +1 to send NULL terminator
-                        0);
-                    if (result == SOCKET_ERROR) {
-                        cout << "send failed: " << errno
-                             << endl;
-                    }
-                }
-
-                cout << endl;
-                server.release_client();
-
-                if (is_terminate_message(recv_message)) {
+                char buffer[LEN + 1];
+                bzero(buffer, LEN);
+                n = recv(client_socket, buffer, LEN, 0);
+                if (n < 0)
+                    error("ERROR reading from socket");
+                recv_message += buffer;
+                if (buffer[n - 1] == 0)
+                {
                     break;
                 }
             }
-        } // while ( true )
-    }
-
+            if (recv_message.size() == 0)
+            {
+                cout << "recv_message == 0" << endl;
+                server.release_client();
+                break;
+            }
+             cout << "find neighborhood " << recv_message << endl;
+            // Find neighborhood in vector from recv_message
+            string send_message;
+            cout << "bottom count: " << count << endl;
+            for (int i = 0; i < count; i++)
+            {
+                // cout << recv_message << endl;
+                if (recv_message == listing[i].neighborhood)
+                {
+                    send_message = listing[i].price;
+                    // cout << send_message << endl;
+                }
+            }
+            n = send(client_socket, send_message.c_str(), send_message.size() + 1, 0);
+            cout << "send_message: " << send_message << endl;
+            if (n < 0)
+                error("ERROR writing to socket");
+            // recv ID
+        }
+        cout << endl;
+        server.release_client();
+    } // while ( true )
     return 0;
 }
