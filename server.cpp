@@ -70,11 +70,11 @@ vector<vector<string>> table;
 
 int main(int argc, char **argv)
 {
-    // string filename = prompt("Enter a file name: ");
-    string filename = "2.txt";
+    string filename = prompt("Enter a file name: ");
+    // string filename = "2.txt";
     Server server;
-    // string port = prompt("Enter server port number: ");
-    // int port_number = to<int>(port);
+    string port = prompt("Enter server port number: ");
+    int port_number = to<int>(port);
     int port_number = 1111;
     cout << port_number
          << endl;

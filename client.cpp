@@ -96,8 +96,8 @@ int main(int argc, char **argv) {
     char local_hostname[256] = {};
     gethostname(local_hostname, 256);
 
-    // string hostname = prompt("Enter a server host name: ");
-    string hostname = "Flagship";
+    string hostname = prompt("Enter a server host name: ");
+    // string hostname = "Flagship";
     while (hostname != local_hostname) {
         cout << "Error. By requirement, the host name must equal '"
              << local_hostname
@@ -105,8 +105,8 @@ int main(int argc, char **argv) {
              << endl;
         hostname = prompt("Enter a server host name: ");
     }
-    // string port = prompt("Enter server port number: ");
-    string port = "1111";
+    string port = prompt("Enter server port number: ");
+    // string port = "1111";
     cout << endl;
     int port_number = to<int>(port);
 
