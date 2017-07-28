@@ -173,8 +173,6 @@ int main(int argc, char **argv)
             }
             if (recv_message.size() == 0)
             {
-                // cout << "recv_message == 0" << endl;
-                server.release_client();
                 break;
             }
             //  cout << "find neighborhood " << recv_message << endl;
