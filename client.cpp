@@ -69,7 +69,7 @@ void dostuff(int sock) {
             break;
         // cout << "waiting: " << endl;
         while (true) {
-            cout << "while: " << endl;
+            // cout << "while: " << endl;
             char buffer[LEN + 1];
             bzero(buffer, LEN);
             n = recv(sock, buffer, LEN, 0);

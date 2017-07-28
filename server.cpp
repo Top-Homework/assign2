@@ -150,7 +150,7 @@ int main(int argc, char **argv)
             break;
         }
 
-        // cout << "Accepted a client." << endl;
+        cout << "Accepted a client." << endl;
 
         while (true)
         {
