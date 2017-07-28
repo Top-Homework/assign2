@@ -115,7 +115,7 @@ int main(int argc, char **argv)
 
     Listing listing[count];
     string line;
-    cout << "top count: " << count << endl;
+    // cout << "top count: " << count << endl;
     count = 0;
     in.open(filename);
     while (getline(in, line))
@@ -150,14 +150,14 @@ int main(int argc, char **argv)
             break;
         }
 
-        cout << "Accepted a client." << endl;
+        // cout << "Accepted a client." << endl;
 
         while (true)
         {
             // send/receive
             int n;
             string recv_message;
-            cout << "waiting " << endl;
+            // cout << "waiting " << endl;
             while (true)
             {
                 char buffer[LEN + 1];
@@ -173,14 +173,14 @@ int main(int argc, char **argv)
             }
             if (recv_message.size() == 0)
             {
-                cout << "recv_message == 0" << endl;
+                // cout << "recv_message == 0" << endl;
                 server.release_client();
                 break;
             }
-             cout << "find neighborhood " << recv_message << endl;
+            //  cout << "find neighborhood " << recv_message << endl;
             // Find neighborhood in vector from recv_message
             string send_message;
-            cout << "bottom count: " << count << endl;
+            // cout << "bottom count: " << count << endl;
             for (int i = 0; i < count; i++)
             {
                 // cout << recv_message << endl;
@@ -191,7 +191,7 @@ int main(int argc, char **argv)
                 }
             }
             n = send(client_socket, send_message.c_str(), send_message.size() + 1, 0);
-            cout << "send_message: " << send_message << endl;
+            // cout << "send_message: " << send_message << endl;
             if (n < 0)
                 error("ERROR writing to socket");
             // recv ID

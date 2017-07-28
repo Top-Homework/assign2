@@ -67,7 +67,7 @@ void dostuff(int sock) {
             error("ERROR writing to socket");
         if (send_message.size() == 0)
             break;
-        cout << "waiting: " << endl;
+        // cout << "waiting: " << endl;
         while (true) {
             cout << "while: " << endl;
             char buffer[LEN + 1];
@@ -80,7 +80,7 @@ void dostuff(int sock) {
                 break;
             }
         }
-        cout << "recvd: " << recv_message << endl;
+        // cout << "recvd: " << recv_message << endl;
         if (recv_message.size() == 0) {
             cout << "That neighborhood is not in the table" << endl;
         }
